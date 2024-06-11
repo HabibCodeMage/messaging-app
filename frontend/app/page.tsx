@@ -27,6 +27,10 @@ const Chat = () => {
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
 
   useEffect(() => {
+    const savedMessages = localStorage.getItem('messagesArray');
+    if (savedMessages) {
+      setMessagesArray(JSON.parse(savedMessages));
+    }
     socket.on('typing', (data) => {
       setTypingUsers((prev) => [...prev, data.username]);
 
@@ -44,16 +48,20 @@ const Chat = () => {
 
     socket.on('message', ({ message, senderUsername }) => {
       const data = JSON.parse(message);
-      setMessagesArray((prev) => [
-        ...prev,
-        {
-          message: data.text,
-          isReply: false,
-          timeStamp: data.timeStamp,
-          senderUserName: senderUsername,
-          recipientUsername: user!.name,
-        },
-      ]);
+      const newMessage = {
+        message: data.text,
+        isReply: false,
+        timeStamp: data.timeStamp,
+        senderUserName: senderUsername,
+        recipientUsername: user!.name,
+      };
+      setMessagesArray((prev) => {
+        const updatedMessages = [...prev, newMessage];
+        // Save updated messages to local storage
+        localStorage.setItem('messagesArray', JSON.stringify(updatedMessages));
+        return updatedMessages;
+      });
+
     });
 
     return () => {
@@ -72,7 +80,7 @@ const Chat = () => {
       message: JSON.stringify(data),
       senderUsername: user?.name,
     });
-    setMessagesArray([
+    const array = [
       ...messagesArray,
       {
         message,
@@ -81,7 +89,9 @@ const Chat = () => {
         senderUserName: user!.name,
         recipientUsername: selectedUser,
       },
-    ]);
+    ];
+    setMessagesArray(array);
+    localStorage.setItem('messagesArray', JSON.stringify(array));
     setMessage('');
   };
 
@@ -147,6 +157,7 @@ const Chat = () => {
                 text={message.message}
                 key={message.timeStamp + message.message}
                 isReply={message.isReply}
+                timeStamp={message.timeStamp}
               />
             ))}
           </div>
