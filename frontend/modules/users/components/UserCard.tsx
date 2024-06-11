@@ -8,7 +8,7 @@ import { green } from '@mui/material/colors';
 
 const RecipeReviewCard: React.FC<{
   name: string;
-  isTyping: false;
+  isTyping: boolean;
   setUser: React.Dispatch<React.SetStateAction<string>>;
 }> = ({ name, isTyping, setUser }) => {
   return (

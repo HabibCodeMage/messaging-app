@@ -21,17 +21,19 @@ const socket = io('http://localhost:5000');
 const Chat = () => {
   const [message, setMessage] = useState('');
   const [messagesArray, setMessagesArray] = useState<Message[]>([]);
-  const [typing, setTyping] = useState(false);
-  const [typingMessage, setTypingMessage] = useState('');
   const [selectedUser, setSelectedUser] = useState('');
   const { userData, loadingUser } = useUserFetch();
   const { user } = useAuth();
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
 
   useEffect(() => {
     socket.on('typing', (data) => {
-      setTypingMessage(`${data.username} is typing...`);
-      setTimeout(() => setTypingMessage(''), 3000);
-      console.log('message');
+      setTypingUsers((prev) => [...prev, data.username]);
+
+      setTimeout(() => {
+        // Remove user from the typingUsers array
+        setTypingUsers((prev) => prev.filter((user) => user !== data.username));
+      }, 3000);
     });
 
     socket.on('connect', () => {
@@ -84,14 +86,8 @@ const Chat = () => {
   };
 
   const handleTyping = () => {
-    if (!typing) {
-      setTyping(true);
-      socket.emit('typing', { username: 'User' });
-      setTimeout(() => setTyping(false), 3000);
-    }
+    socket.emit('typing', { username: user!.name });
   };
-
-  console.log('messagesArray', messagesArray);
 
   const filteredArray = messagesArray.filter((message) => {
     if (
@@ -121,7 +117,7 @@ const Chat = () => {
             <UserCard
               key={user._id}
               name={user.name}
-              isTyping={false}
+              isTyping={typingUsers.includes(user.name)}
               setUser={setSelectedUser}
             />
           ))}
@@ -171,7 +167,10 @@ const Chat = () => {
                 inputProps={{ 'aria-label': 'Type a message' }}
                 className="tw-bg-searchBar tw-px-10 tw-py-3 tw-rounded-xl tw-text-white"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                  handleTyping();
+                }}
               />
               <svg
                 viewBox="0 0 24 24"
