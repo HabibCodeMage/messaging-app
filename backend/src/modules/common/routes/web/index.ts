@@ -1,13 +1,12 @@
-import express from 'express'
-const router = express.Router()
+import express from 'express';
+const router = express.Router();
 
 // Import individual web route files
-import loginRoute from './login'
-import signupRoute from './signup'
+import authRoutes from './auth';
+import userRoutes from './users';
 
 // Use the imported route files
-router.use('/login', loginRoute)
-router.use('/signup', signupRoute)
+router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
 
-export default router
-
+export default router;

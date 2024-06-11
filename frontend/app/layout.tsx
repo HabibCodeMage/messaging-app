@@ -2,12 +2,14 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
-import ErrorBoundary from '@/modules/common/ErrorBoundary';
+import ErrorBoundary from '@/modules/common/components/ErrorBoundary';
 import CssBaseline from '@mui/material/CssBaseline';
-import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { Toaster } from 'react-hot-toast';
 
-import theme from '@/modules/common/theme';
+import theme from '@/modules/common/styles/theme';
+import ProtectedLayout from '@/modules/common/components/ProtectedLayout';
+import { AuthProvider } from '@/modules/common/contexts/AuthContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,16 +25,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-          <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={theme}>
-              {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-              <CssBaseline />
-              <Toaster />
-              <ErrorBoundary>{children}</ErrorBoundary>
-            </ThemeProvider>
-          </StyledEngineProvider>
+          <ThemeProvider theme={theme}>
+            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+            <CssBaseline />
+            <Toaster />
+            <ErrorBoundary>
+              <AuthProvider>
+                <ProtectedLayout>{children}</ProtectedLayout>
+              </AuthProvider>
+            </ErrorBoundary>
+          </ThemeProvider>
         </AppRouterCacheProvider>
       </body>
     </html>
