@@ -7,22 +7,27 @@ import UserCard from '@/modules/users/components/UserCard';
 import { green } from '@mui/material/colors';
 import useUserFetch from '@/modules/users/hooks/useUsers';
 import { useAuth } from '@/modules/common/contexts/AuthContext';
+import ChatCard from '@/modules/chat/components/ChatCard';
+
+interface Message {
+  message: string;
+  isReply: boolean;
+  timeStamp: string;
+  senderUserName: string;
+  recipientUsername: string;
+}
+const socket = io('http://localhost:5000');
 
 const Chat = () => {
   const [message, setMessage] = useState('');
+  const [messagesArray, setMessagesArray] = useState<Message[]>([]);
   const [typing, setTyping] = useState(false);
   const [typingMessage, setTypingMessage] = useState('');
   const [selectedUser, setSelectedUser] = useState('');
   const { userData, loadingUser } = useUserFetch();
   const { user } = useAuth();
-  const socket = io('http://localhost:5000');
 
   useEffect(() => {
-    socket.on('message', (message) => {
-      console.log('message', message);
-      // setMessages((prevMessages) => [...prevMessages, message]);
-    });
-
     socket.on('typing', (data) => {
       setTypingMessage(`${data.username} is typing...`);
       setTimeout(() => setTypingMessage(''), 3000);
@@ -35,10 +40,18 @@ const Chat = () => {
       socket.emit('register', user?.name);
     });
 
-    socket.on('private_message', ({ message, senderUsername }) => {
-      console.log(`Private message ${message}`);
-
-      // Handle the private message
+    socket.on('message', ({ message, senderUsername }) => {
+      const data = JSON.parse(message);
+      setMessagesArray((prev) => [
+        ...prev,
+        {
+          message: data.text,
+          isReply: false,
+          timeStamp: data.timeStamp,
+          senderUserName: senderUsername,
+          recipientUsername: user!.name,
+        },
+      ]);
     });
 
     return () => {
@@ -48,11 +61,25 @@ const Chat = () => {
   }, []);
 
   const sendMessage = () => {
-    const newMessage = { text: message, timestamp: new Date() };
-    socket.emit('private_message', {
+    const data = {
+      text: message,
+      timeStamp: new Date().toISOString(),
+    };
+    socket.emit('message', {
       recipientUsername: selectedUser,
-      message: JSON.stringify({ text: message }),
+      message: JSON.stringify(data),
+      senderUsername: user?.name,
     });
+    setMessagesArray([
+      ...messagesArray,
+      {
+        message,
+        isReply: true,
+        timeStamp: data.timeStamp,
+        senderUserName: user!.name,
+        recipientUsername: selectedUser,
+      },
+    ]);
     setMessage('');
   };
 
@@ -63,6 +90,23 @@ const Chat = () => {
       setTimeout(() => setTyping(false), 3000);
     }
   };
+
+  console.log('messagesArray', messagesArray);
+
+  const filteredArray = messagesArray.filter((message) => {
+    if (
+      message.senderUserName === user?.name &&
+      message.recipientUsername === selectedUser
+    ) {
+      return true;
+    } else if (
+      message.recipientUsername === user?.name &&
+      message.senderUserName === selectedUser
+    ) {
+      return true;
+    }
+    return false;
+  });
 
   return (
     <div className="tw-grid  tw-grid-cols-[400px,auto] tw-h-screen">
@@ -100,6 +144,15 @@ const Chat = () => {
                 {selectedUser}
               </Typography>
             </div>
+          </div>
+          <div className="tw-h-[80%] tw-overflow-scroll">
+            {filteredArray.map((message) => (
+              <ChatCard
+                text={message.message}
+                key={message.timeStamp + message.message}
+                isReply={message.isReply}
+              />
+            ))}
           </div>
           <div className="tw-absolute tw-bottom-0 tw-left-0 tw-w-[100%]">
             <Paper

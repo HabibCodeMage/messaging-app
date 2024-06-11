@@ -52,6 +52,7 @@ const io = new Server(server, {
 interface User {
   id: string;
   username: string;
+  senderUsername: string;
 }
 
 const users: Record<string, User> = {};
@@ -65,13 +66,9 @@ const updateUsers = () => {
 io.on('connection', (socket) => {
   // Handle new user registration
   socket.on('register', (username: string) => {
-    if (Object.values(users).some((user) => user.username === username)) {
-      socket.emit('registration_failed', 'Username already exists');
-    } else {
-      users[socket.id] = { id: socket.id, username };
-      console.log(`User registered: ${username} with ID: ${socket.id}`);
-      updateUsers();
-    }
+    users[socket.id] = { id: socket.id, username, senderUsername: username };
+    console.log(`User registered: ${username} with ID: ${socket.id}`);
+    updateUsers();
   });
 
   socket.on(
@@ -79,9 +76,11 @@ io.on('connection', (socket) => {
     ({
       recipientUsername,
       message,
+      senderUsername,
     }: {
       recipientUsername: string;
       message: string;
+      senderUsername: string;
     }) => {
       const recipient = Object.values(users).find(
         (user) => user.username === recipientUsername,
@@ -91,7 +90,7 @@ io.on('connection', (socket) => {
         if (recipientSocket) {
           recipientSocket.emit('private_message', {
             message,
-            senderUsername: users[socket.id]?.username || 'Unknown',
+            senderUsername,
           });
           console.log(
             `Message from ${users[socket.id]?.username || 'Unknown'} to ${recipientUsername}: ${message}`,
@@ -108,8 +107,7 @@ io.on('connection', (socket) => {
   // Handle public messages
   socket.on('message', (data: any) => {
     messages.push(data);
-    console.log('data', data);
-    io.emit('message', data);
+    socket.broadcast.emit('message', data);
   });
 
   // Handle typing notification

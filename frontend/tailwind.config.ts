@@ -23,6 +23,8 @@ const config: Config = {
       headerBg: '#202c33',
       black: '#000',
       searchBar: '#2a3942',
+      replyGreen: '#00a884',
+      incomingGreen: '#254336',
     },
   },
   plugins: [],
