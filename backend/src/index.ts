@@ -11,21 +11,6 @@ connectionDB();
 
 const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: {
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST'],
-  },
-});
-
-interface User {
-  id: string;
-  username: string;
-}
-
-const users: Record<string, User> = {};
-const messages: any[] = [];
-
 // middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -42,61 +27,6 @@ app.use(
 // routes
 app.use('/', webRoutes); // No prefix for web routes
 
-const updateUsers = () => {
-  const usernames = Object.values(users).map((user) => user.username);
-  io.emit('update_users', usernames);
-};
-
-io.on('connection', (socket) => {
-  // Handle new user registration
-  socket.on('register', (username: string) => {
-    users[username] = { id: socket.id, username }; // Store user by socket.id
-    console.log(`User registered: ${username} with ID: ${socket.id}`);
-    updateUsers();
-  });
-
-  socket.on('private_message', ({ recipientUsername, message }) => {
-    const recipientId = users[recipientUsername]?.id;
-    console.log('users', users);
-    if (recipientId) {
-      const recipientSocket = io.sockets.sockets.get(recipientId);
-      if (recipientSocket) {
-        recipientSocket.emit('private_message', {
-          message,
-          senderUsername: 'fatima', // Use username instead of socket.id
-        });
-        console.log(`Message from fatima to ${recipientUsername}: ${message}`);
-      } else {
-        console.log(`Recipient socket ${recipientUsername} not found`);
-      }
-    } else {
-      console.log(`Recipient ${recipientUsername} not found`);
-    }
-  });
-
-  // Handle public messages
-  socket.on('message', (data) => {
-    messages.push(data);
-    console.log('data', data);
-    io.emit('message', data);
-  });
-
-  // Handle typing notification
-  socket.on('typing', (data) => {
-    socket.broadcast.emit('typing', data);
-  });
-
-  // Handle user disconnect
-  socket.on('disconnect', () => {
-    console.log('A user disconnected: ' + socket.id);
-    if (users[socket.id]) {
-      console.log(`User ${users[socket.id].username} disconnected`);
-      delete users[socket.id]; // Remove user from users object
-      updateUsers();
-    }
-  });
-});
-
 // Add default route
 app.all('*', (_req: Request, res: Response) => {
   return res.status(404).json({ message: 'Route not found' });
@@ -110,4 +40,91 @@ app.use((err: any, _req: Request, res: Response) => {
 
 server.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
+});
+
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+  },
+});
+
+interface User {
+  id: string;
+  username: string;
+}
+
+const users: Record<string, User> = {};
+const messages: any[] = [];
+
+const updateUsers = () => {
+  const usernames = Object.values(users).map((user) => user.username);
+  io.emit('update_users', usernames);
+};
+
+io.on('connection', (socket) => {
+  // Handle new user registration
+  socket.on('register', (username: string) => {
+    if (Object.values(users).some((user) => user.username === username)) {
+      socket.emit('registration_failed', 'Username already exists');
+    } else {
+      users[socket.id] = { id: socket.id, username };
+      console.log(`User registered: ${username} with ID: ${socket.id}`);
+      updateUsers();
+    }
+  });
+
+  socket.on(
+    'private_message',
+    ({
+      recipientUsername,
+      message,
+    }: {
+      recipientUsername: string;
+      message: string;
+    }) => {
+      const recipient = Object.values(users).find(
+        (user) => user.username === recipientUsername,
+      );
+      if (recipient) {
+        const recipientSocket = io.sockets.sockets.get(recipient.id);
+        if (recipientSocket) {
+          recipientSocket.emit('private_message', {
+            message,
+            senderUsername: users[socket.id]?.username || 'Unknown',
+          });
+          console.log(
+            `Message from ${users[socket.id]?.username || 'Unknown'} to ${recipientUsername}: ${message}`,
+          );
+        } else {
+          socket.emit('error_message', 'Recipient is not online');
+        }
+      } else {
+        socket.emit('error_message', 'Recipient not found');
+      }
+    },
+  );
+
+  // Handle public messages
+  socket.on('message', (data: any) => {
+    messages.push(data);
+    console.log('data', data);
+    io.emit('message', data);
+  });
+
+  // Handle typing notification
+  socket.on('typing', (data: any) => {
+    socket.broadcast.emit('typing', data);
+  });
+
+  // Handle user disconnect
+  socket.on('disconnect', () => {
+    console.log('A user disconnected: ' + socket.id);
+    const disconnectedUser = users[socket.id];
+    if (disconnectedUser) {
+      console.log(`User ${disconnectedUser.username} disconnected`);
+      delete users[socket.id]; // Remove user from users object
+      updateUsers();
+    }
+  });
 });

@@ -7,7 +7,6 @@ import UserCard from '@/modules/users/components/UserCard';
 import { green } from '@mui/material/colors';
 import useUserFetch from '@/modules/users/hooks/useUsers';
 import { useAuth } from '@/modules/common/contexts/AuthContext';
-const socket = io('http://localhost:5000');
 
 const Chat = () => {
   const [message, setMessage] = useState('');
@@ -16,6 +15,7 @@ const Chat = () => {
   const [selectedUser, setSelectedUser] = useState('');
   const { userData, loadingUser } = useUserFetch();
   const { user } = useAuth();
+  const socket = io('http://localhost:5000');
 
   useEffect(() => {
     socket.on('message', (message) => {
