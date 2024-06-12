@@ -73,7 +73,7 @@ export default function LoginPage() {
     }
   };
   return (
-    <div className="tw-grid tw-grid-cols-2 tw-max-h-[100vh] tw-h-[100vh]">
+    <div className="tw-grid lg:tw-grid-cols-2 tw-grid-rows-[100vh]">
       <div className="tw-flex tw-flex-col tw-h-[100%] tw-mx-10 tw-my-10">
         <h1>Welcome Back</h1>
         <h1 className="tw-italic">Lets start by signing in!</h1>
@@ -109,24 +109,25 @@ export default function LoginPage() {
           Login
         </Button>
       </div>
-      <div className=" tw-bg-[#006769] tw-rounded-2xl tw-mx-10 tw-my-10 tw-px-10">
-        <div className="tw-flex tw-flex-col tw-h-[100%]">
+      <div className=" tw-bg-[#006769] tw-rounded-2xl tw-mx-10 tw-my-10 tw-px-10 lg:tw-grid xsm:tw-hidden  " style={{
+        gridTemplateRows: '200px calc(100% - 200px)'
+      }}>
           <div className="tw-text-white">
             <h1 className="tw-italic">
               The simplest way to connect with your loved
             </h1>
             <h1 className="tw-font-bold tw-text-5xl">Chit Clan</h1>
           </div>
-          <div className="tw-flex-1">
             <img
               src={
                 'https://images.stockcake.com/public/7/b/f/7bf0969a-a483-41a7-a9eb-0c8e5febabd5_large/interactive-technology-display-stockcake.jpg'
               }
               alt="alt"
-              className="tw-w-[100%] tw-rounded-xl tw-flex-1 tw-h-[90%]"
+              className="tw-w-[100%] tw-rounded-xl tw-block tw-flex-1 tw-object-cover tw-h-[90%]"
+              style={{
+                gridRow: '2 / -1'
+              }}
             />
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -115,14 +115,14 @@ const Chat = () => {
   });
 
   return (
-    <div className="tw-grid  tw-grid-cols-[400px,auto] tw-h-screen">
-      <div className="tw-bg-cardBg tw-h-[100vh] tw-flex tw-flex-col">
+    <div className=" lg:tw-grid  tw-grid-cols-[400px,auto] tw-h-screen">
+      <div className="tw-bg-cardBg lg-tw-h-[100vh] tw-flex tw-flex-col">
         <div>
-          <Typography className="tw-px-10 tw-mt-10 tw-text-white tw-text-3xl tw-mb-5">
+          <Typography className="tw-px-10 lg:tw-mt-10 xsm:tw-mt-4 tw-text-white tw-text-3xl lg:tw-mb-5">
             Chats
           </Typography>
         </div>
-        <div className="tw-h-[100%] tw-flex-1 tw-overflow-scroll py-10 ">
+        <div className="lg:tw-h-[100%] lg:tw-flex-1 lg:tw-block xsm:tw-flex tw-overflow-scroll lg:tw-py-10 ">
           {userData.map((user) => (
             <UserCard
               key={user._id}
@@ -137,7 +137,7 @@ const Chat = () => {
       {/* Content for the second column */}
       {selectedUser ? (
         <div className="tw-h-[100vh] tw-bg-darkGreen tw-relative">
-          <div className="tw-bg-green tw-py-1 tw-px-10 tw-z-20 tw-border-b-green tw-border-1 tw-border-solid">
+          <div className="tw-bg-green tw-py-1 tw-px-10 tw-z-20 tw-border-b-green tw-border-1 tw-border-soli tw-z-30">
             <div className="tw-flex tw-items-baseline">
               <Avatar
                 sx={{ bgcolor: green[500], width: '60px', height: '60px' }}

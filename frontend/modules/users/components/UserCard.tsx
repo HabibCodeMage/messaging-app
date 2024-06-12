@@ -14,10 +14,6 @@ const RecipeReviewCard: React.FC<{
   return (
     <Card
       sx={{
-        minWidth: '100%',
-        maxWidth: '100%',
-        height: '100px',
-        margin: '10px auto 10px auto',
         cursor: 'pointer',
         backgroundColor: 'transparent',
         '&:hover': {
@@ -25,6 +21,7 @@ const RecipeReviewCard: React.FC<{
         },
       }}
       onClick={() => setUser(name)}
+      className='lg:min-w-[100%] lg:tw-max-w-[100%] lg:tw-mx-auto lg:tw-my-10 xsm:tw-mx-5'
     >
       <CardHeader
         avatar={
