@@ -1,5 +1,11 @@
 # Project README
 
+## Video Demo
+<video width="100%" height="340" controls>
+  <source src="https://youtu.be/wEiz3va0EBE">
+  Your browser does not support the video tag.
+</video>
+
 ## Getting Started
 
 This guide will help you set up and run the project using Docker Compose. Follow the steps below to get started.
