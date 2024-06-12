@@ -1,10 +1,8 @@
 # Project README
 
 ## Video Demo
-<video width="100%" height="340" controls>
-  <source src="https://youtu.be/wEiz3va0EBE">
-  Your browser does not support the video tag.
-</video>
+
+[![Video Demo](https://img.youtube.com/vi/wEiz3va0EBE/0.jpg)](https://www.youtube.com/watch?v=wEiz3va0EBE)
 
 ## Getting Started
 
